@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AI Generation — тестовая страница</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 24px auto;
+         padding: 0 16px; background:#0f1115; color:#e6e6e6; }
+  h1 { font-size: 20px; }
+  label { display:block; margin:10px 0 4px; font-size:13px; color:#9aa4b2; }
+  input, select, textarea, button {
+    width:100%; padding:10px; border-radius:8px; border:1px solid #2a2f3a;
+    background:#171a21; color:#e6e6e6; font-size:14px; box-sizing:border-box; }
+  button { background:#3b82f6; border:none; cursor:pointer;
+           font-weight:600; margin-top:14px; }
+  button:disabled { opacity:.6; cursor:default; }
+  .row { display:flex; gap:10px; } .row > * { flex:1; }
+  .muted { color:#9aa4b2; font-size:12px; }
+  #log { white-space:pre-wrap; background:#0b0d11; border:1px solid #2a2f3a;
+         border-radius:8px; padding:10px; margin-top:14px; font-size:12px; min-height:40px; }
+  #result img, #result video { max-width:100%; border-radius:10px; margin-top:14px; }
+  .card { background:#141822; border:1px solid #232838; border-radius:12px; padding:16px; }
+</style>
+</head>
+<body>
+  <h1>🎨 AI Generation — тест</h1>
+  <p class="muted">Временная страница для проверки. Введи API-ключ, выбери режим,
+     (опц.) прикрепи фото — и нажми «Сгенерировать».</p>
+
+  <div class="card">
+    <label>Базовый URL API</label>
+    <input id="base" value="" placeholder="http://45.80.129.30:8000"/>
+    <label>API-ключ (X-API-Key)</label>
+    <input id="key" placeholder="sk_..."/>
+    <div class="row">
+      <div>
+        <label>Тип</label>
+        <select id="ttype"><option value="photo">photo</option><option value="video">video</option></select>
+      </div>
+      <div>
+        <label>Режим (mode)</label>
+        <input id="mode" value="PHOTO_MODE_1"/>
+      </div>
+    </div>
+    <label>Что изменить / инструкция (metadata.change)</label>
+    <input id="change" placeholder="cinematic portrait, studio light"/>
+    <label>Фото (опционально — для image-to-image)</label>
+    <input id="file" type="file" accept="image/*"/>
+    <button id="go" onclick="run()">Сгенерировать</button>
+    <button onclick="listModes()" style="background:#374151">Показать режимы</button>
+  </div>
+
+  <div id="log"></div>
+  <div id="result"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+$("base").value = location.origin.startsWith("http") ? location.origin : "http://45.80.129.30:8000";
+const log = m => { $("log").textContent += m + "\n"; };
+const headers = () => ({ "X-API-Key": $("key").value.trim() });
+
+async function listModes() {
+  $("log").textContent = "";
+  try {
+    const r = await fetch(`${$("base").value}/modes?task_type=${$("ttype").value}`, { headers: headers() });
+    const d = await r.json();
+    log("Режимы: " + d.modes.map(m => m.id).join(", "));
+  } catch (e) { log("Ошибка: " + e); }
+}
+
+async function run() {
+  $("log").textContent = ""; $("result").innerHTML = ""; $("go").disabled = true;
+  try {
+    const base = $("base").value.trim();
+    let image_url = null;
+    const f = $("file").files[0];
+    if (f) {
+      log("Загружаю фото...");
+      const fd = new FormData(); fd.append("file", f);
+      const up = await fetch(`${base}/uploads`, { method:"POST", headers: headers(), body: fd });
+      if (!up.ok) throw new Error("upload: " + up.status + " " + await up.text());
+      image_url = (await up.json()).image_url;
+      log("Фото загружено.");
+    }
+    const body = {
+      task_type: $("ttype").value, mode: $("mode").value.trim(),
+      metadata: { change: $("change").value },
+    };
+    if (image_url) body.image_url = image_url;
+    log("Отправляю задачу...");
+    const gen = await fetch(`${base}/generate`, {
+      method:"POST", headers: { ...headers(), "Content-Type":"application/json" },
+      body: JSON.stringify(body) });
+    if (!gen.ok) throw new Error("generate: " + gen.status + " " + await gen.text());
+    const { task_id } = await gen.json();
+    log("task_id: " + task_id + " — жду результат...");
+    for (let i=0;i<120;i++) {
+      await new Promise(s=>setTimeout(s,1500));
+      const st = await (await fetch(`${base}/tasks/${task_id}`, { headers: headers() })).json();
+      if (st.status === "completed") {
+        log("Готово за " + (st.generation_time||"?") + " мс");
+        const url = st.result_url;
+        $("result").innerHTML = url.endsWith(".gif") || url.endsWith(".mp4")
+          ? `<video src="${url}" autoplay loop muted controls></video>`
+          : `<img src="${url}"/>`;
+        return;
+      }
+      if (st.status === "failed") { log("ОШИБКА: " + st.error); return; }
+      log("  ...статус: " + st.status + " " + (st.progress||0) + "%");
+    }
+    log("Таймаут ожидания.");
+  } catch (e) { log("Ошибка: " + e.message); }
+  finally { $("go").disabled = false; }
+}
+</script>
+</body>
+</html>

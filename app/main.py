@@ -77,6 +77,10 @@ def create_app() -> FastAPI:
         os.makedirs(settings.STORAGE_LOCAL_DIR, exist_ok=True)
         app.mount("/files", StaticFiles(directory=settings.STORAGE_LOCAL_DIR), name="files")
 
+    # Временная тестовая веб-страница (http://<host>/ui/test.html). Можно удалить.
+    if os.path.isdir("web"):
+        app.mount("/ui", StaticFiles(directory="web", html=True), name="ui")
+
     return app
 
 
