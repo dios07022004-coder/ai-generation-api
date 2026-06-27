@@ -39,6 +39,9 @@ config/modes/video/VIDEO_VARIATION_1.yaml  # 40 видео-вариаций
 Полное ТЗ интеграции (2 сервера) + промтинг/качество — [docs/TZ.md](docs/TZ.md).
 Запуск на Selectel (что брать + минимизация трат) — [docs/SELECTEL.md](docs/SELECTEL.md).
 Деплой и правки через GitHub (бесплатный план) — [docs/GITHUB.md](docs/GITHUB.md).
+Пошаговый запуск на GPU-сервере — [docs/RUNBOOK.md](docs/RUNBOOK.md).
+Подключение сайта к API (промт для Cursor) — [docs/CURSOR_INTEGRATION.md](docs/CURSOR_INTEGRATION.md).
+Онбординг AI-ассистента по самому API — [docs/AI_BRIEF.md](docs/AI_BRIEF.md).
 
 Подробнее — [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md),
 API — [docs/API_REFERENCE.md](docs/API_REFERENCE.md),

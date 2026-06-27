@@ -19,12 +19,27 @@ PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-http://localhost:8000}"
 
 log(){ echo -e "\n=== $* ==="; }
 
-# --- 0. системные зависимости (драйвер+Docker уже в образе GPU optimized) ---
+# --- 0. системные зависимости ----------------------------------------------
 log "Системные пакеты"
 apt-get update -y
 apt-get install -y --no-install-recommends git git-lfs python3-venv python3-pip \
-    aria2 ffmpeg curl
+    aria2 ffmpeg curl ca-certificates
 git lfs install || true
+
+# Docker: в образе "GPU Driver 590 Open - Docker" он есть; в "580 Open" — нет.
+if ! command -v docker >/dev/null 2>&1; then
+  log "Docker не найден — ставлю Docker + nvidia-container-toolkit"
+  curl -fsSL https://get.docker.com | sh
+  # NVIDIA Container Toolkit (чтобы контейнеры видели GPU, если понадобится)
+  curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+    | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg || true
+  curl -fsSL https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+    | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+    > /etc/apt/sources.list.d/nvidia-container-toolkit.list || true
+  apt-get update -y && apt-get install -y nvidia-container-toolkit || true
+  nvidia-ctk runtime configure --runtime=docker || true
+  systemctl restart docker || true
+fi
 
 # --- 1. репозиторий проекта -------------------------------------------------
 log "Репозиторий проекта"

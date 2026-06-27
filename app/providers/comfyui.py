@@ -17,6 +17,7 @@
 import json
 import re
 import time
+import uuid
 from pathlib import Path
 
 import httpx
@@ -67,6 +68,26 @@ class ComfyUIProvider(GenerationProvider):
                 f"workflow '{name}' is not valid JSON after substitution: {e}"
             ) from e
 
+    def _upload_url(self, client: httpx.Client, url: str | None) -> str:
+        """Скачать картинку по URL и загрузить в ComfyUI. Вернуть имя файла для LoadImage."""
+        if not url:
+            return ""
+        from app.services.image_fetch import load_bytes
+        data = load_bytes(url)
+        if not data:
+            return ""
+        name = f"in_{uuid.uuid4().hex}.png"
+        try:
+            r = client.post(
+                "/upload/image",
+                files={"image": (name, data, "application/octet-stream")},
+                data={"overwrite": "true"},
+            )
+            r.raise_for_status()
+            return r.json().get("name", name)
+        except httpx.HTTPError as e:
+            raise ProviderError(f"comfyui image upload failed: {e}") from e
+
     # --- ComfyUI HTTP API --------------------------------------------------
 
     def generate(self, req: GenerationRequest, progress: ProgressCb) -> GenerationResult:
@@ -90,9 +111,17 @@ class ComfyUIProvider(GenerationProvider):
         }
         for i, url in enumerate(req.reference_urls):
             ctx[f"reference_{i}"] = url
-        workflow = self._load_workflow(req.workflow, ctx)
 
         with httpx.Client(base_url=self.base, timeout=self.timeout) as client:
+            # Загружаем входные изображения в ComfyUI: нода LoadImage работает по
+            # ИМЕНИ файла (а не URL). Имена доступны в workflow как {{image_name}},
+            # {{mask_name}}, {{reference_0_name}}, ...
+            ctx["image_name"] = self._upload_url(client, req.image_url)
+            ctx["mask_name"] = self._upload_url(client, req.mask_url)
+            for i, url in enumerate(req.reference_urls):
+                ctx[f"reference_{i}_name"] = self._upload_url(client, url)
+
+            workflow = self._load_workflow(req.workflow, ctx)
             try:
                 r = client.post("/prompt", json={"prompt": workflow})
                 r.raise_for_status()

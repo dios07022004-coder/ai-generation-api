@@ -3,11 +3,10 @@
 # Менять модель можно здесь, не трогая код.
 
 photo_generation_model:
-  name: flux1-dev                      # checkpoint в ComfyUI
-  type: image
-  # Доп. параметры по умолчанию для движка/workflow:
+  name: sd_xl_base_1.0.safetensors     # checkpoint в ComfyUI (его качает bootstrap)
+  type: image                          # работает с workflow sdxl_txt2img / sdxl_img2img
   steps: 28
-  cfg: 3.5
+  cfg: 4.0
   sampler: euler
 
 photo_face_model:
