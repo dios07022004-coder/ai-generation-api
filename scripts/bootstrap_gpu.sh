@@ -112,7 +112,7 @@ Description=ComfyUI
 After=network.target
 [Service]
 WorkingDirectory=$COMFY_DIR
-ExecStart=$COMFY_DIR/venv/bin/python main.py --listen 127.0.0.1 --port 8188 --highvram
+ExecStart=$COMFY_DIR/venv/bin/python main.py --listen 0.0.0.0 --port 8188 --highvram
 Restart=always
 User=root
 [Install]

@@ -32,6 +32,8 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # доступ к ComfyUI на хосте (Linux)
     env_file: .env
     environment:
       - DATABASE_URL=postgresql+psycopg://genapi:genapi@postgres:5432/genapi
@@ -52,6 +54,8 @@ services:
   worker:
     build: .
     command: celery -A app.queues.celery_app worker -l info -Q generation,generation_video --concurrency=1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # доступ к ComfyUI на хосте (Linux)
     env_file: .env
     environment:
       - DATABASE_URL=postgresql+psycopg://genapi:genapi@postgres:5432/genapi
