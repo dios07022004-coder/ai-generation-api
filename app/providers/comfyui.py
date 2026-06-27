@@ -58,7 +58,11 @@ class ComfyUIProvider(GenerationProvider):
                 else:
                     val = None
                     break
-            return "" if val is None else str(val)
+            if val is None:
+                return ""
+            # JSON-экранируем значение (без внешних кавычек): корректно для строк
+            # с переносами/кавычками внутри "..." И для чисел в позиции без кавычек.
+            return json.dumps(str(val))[1:-1]
 
         substituted = _PLACEHOLDER.sub(repl, raw)
         try:

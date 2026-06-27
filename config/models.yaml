@@ -10,10 +10,10 @@ photo_generation_model:
   sampler: euler
 
 photo_face_model:
-  name: sdxl-instantid                 # SDXL + InstantID для сохранения лица
+  name: RealVisXL_V5.0_fp16.safetensors  # фотореалистичный SDXL для InstantID (макс. реализм)
   type: image
-  steps: 30
-  cfg: 4.0
+  steps: 35
+  cfg: 4.5
 
 video_generation_model:
   name: wan-2.1-i2v                     # image-to-video
