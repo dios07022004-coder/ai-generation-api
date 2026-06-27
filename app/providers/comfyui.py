@@ -85,6 +85,8 @@ class ComfyUIProvider(GenerationProvider):
             "reference_count": len(req.reference_urls),
             # Движения: управляющее видео/поза
             "driving_url": req.driving_url or "",
+            # Редактирование: маска области
+            "mask_url": req.mask_url or "",
         }
         for i, url in enumerate(req.reference_urls):
             ctx[f"reference_{i}"] = url

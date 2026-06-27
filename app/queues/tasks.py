@@ -58,6 +58,7 @@ def process_generation(self: CeleryTask, task_id: str) -> None:
         image_url = task.image_url
         reference_urls = list(task.reference_urls or [])
         driving_url = task.driving_url
+        mask_url = task.mask_url
         mode_id = task.mode
         task_type = task.task_type
         meta = dict(task.meta or {})
@@ -90,6 +91,7 @@ def process_generation(self: CeleryTask, task_id: str) -> None:
             image_url=image_url,
             reference_urls=reference_urls,
             driving_url=driving_url,
+            mask_url=mask_url,
             model={"name": mode.model, **model_cfg},
             workflow=mode.workflow,
             params=mode.params,

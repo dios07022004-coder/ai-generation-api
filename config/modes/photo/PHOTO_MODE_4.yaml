@@ -1,30 +1,39 @@
 # ============================================================
-#  PHOTO_MODE_4  —  правится контент-менеджером
+#  PHOTO_MODE_4 — редактируется контент-менеджером.
 #  Меняй ТОЛЬКО prompt_template / negative_prompt / params.
-#  Доступные переменные в шаблоне: {{ image_url }}, {{ user_id }},
-#  {{ request_id }}, {{ metadata.<key> }}
+#  Якоря "keep the SAME face/location" НЕ удалять.
+#  Переменные: {{ image_url }}, {{ metadata.<key> }}
 # ============================================================
 id: PHOTO_MODE_4
 type: photo
 enabled: true
 
-model: photo_face_model          # ключ из config/models.yaml (SDXL+InstantID)
+model: photo_face_model          # ключ из config/models.yaml (SDXL+InstantID / Flux+PuLID)
 workflow: photo_instantid        # config/workflows/photo_instantid.json
 
 params:
   width: 1024
   height: 1024
-  steps: 30
+  steps: 32
+  cfg: 4.5
   seed: 0
+  denoise: 0.45                  # низкий → фон/локация почти не меняются
 
-# Сохранение лица/идентичности (используется workflow'ом):
 preserve_face: true
-reference_strength: 0.8
+reference_strength: 0.9          # высокий → максимум идентичности лица
 
-# >>> ПИШИ ПРОМТ ЗДЕСЬ <<<
 prompt_template: |
-  TODO: промт для PHOTO_MODE_4.
-  Сохрани лицо, персонажа, окружение и композицию исходного фото.
+  RAW photo of the same exact person from the reference image.
+  Keep the SAME face: identical facial features, same eyes, nose, lips,
+  same skin tone and natural skin texture, same hairstyle and age; the person
+  must stay clearly recognizable as the same individual.
+  Keep the SAME background and location as in the source image; do not change the scene.
+  Same composition, camera angle and pose.
+  {{ metadata.change | default('subtle photorealistic enhancement only') }}.
+  photorealistic, natural lighting, sharp focus on the eyes, high detail, 85mm lens.
 
 negative_prompt: |
-  lowres, blurry, deformed, distorted face, extra fingers, watermark
+  different person, another face, changed identity, face swap, altered or distorted face,
+  deformed, asymmetric eyes, plastic skin, beauty filter,
+  different background, new location, changed scene, extra people, duplicate face,
+  text, watermark, lowres, blurry, bad anatomy, extra fingers

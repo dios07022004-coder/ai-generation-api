@@ -17,6 +17,8 @@ class Task(Base, TimestampMixin):
     # Доп. референсы (мульти-персонаж) и управляющее видео (движения):
     reference_urls: Mapped[list] = mapped_column(JSON, default=list)
     driving_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Маска области для редактирования изображений (inpaint и т.п.):
+    mask_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     user_id: Mapped[str | None] = mapped_column(String(128), index=True, nullable=True)
     api_key_id: Mapped[str | None] = mapped_column(ForeignKey("api_keys.id"), nullable=True)

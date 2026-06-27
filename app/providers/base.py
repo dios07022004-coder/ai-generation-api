@@ -27,6 +27,8 @@ class GenerationRequest:
     # Доп. референсы (мульти-персонаж) и управляющее видео (движения):
     reference_urls: list[str] = field(default_factory=list)
     driving_url: str | None = None
+    # Маска области для редактирования (inpaint):
+    mask_url: str | None = None
 
 
 @dataclass

@@ -35,7 +35,7 @@ workflow. Добавление новой категории = новый YAML +
 | Поле | Назначение | Статус |
 |---|---|---|
 | `image_url` | исходное изображение (что редактируем) | ✅ есть |
-| `mask_url` | **маска области правки** (бел=править, чёрн=сохранить) | ⛳ ДОБАВИТЬ |
+| `mask_url` | **маска области правки** (бел=править, чёрн=сохранить) | ✅ реализовано (миграция 0003) |
 | `reference_urls` | референсы (стиль/новый объект/лицо) | ✅ есть |
 | `metadata` | параметры инструкции (напр. `{"instruction":"make it night"}`) | ✅ есть |
 | `mode` | какой тип правки (EDIT_INPAINT и т.п.) | ✅ есть |
@@ -45,21 +45,14 @@ workflow. Добавление новой категории = новый YAML +
 1. фронт рисует маску → загружает через `POST /uploads` → `mask_url`;
 2. авто-маска внутри workflow (SAM2/RMBG по тексту/клику) — тогда `mask_url` не нужен.
 
-### 2.1 Точные изменения в коде (чтобы добавить маску)
-Делается по образцу уже добавленных `reference_urls`/`driving_url`:
+### 2.1 Реализовано ✅ (поле `mask_url` уже в контракте)
+`mask_url` проведён сквозь всю цепочку (schema → model → миграция `0003` →
+task_service → provider → worker → comfyui ctx) и покрыт тестами
+(`tests/test_image_editing.py`). В ComfyUI-workflow доступен как `{{mask_url}}`.
+`POST /uploads` принимает PNG (маска — это PNG), отдельный эндпоинт не нужен.
 
-1. `app/schemas/generate.py` → в `GenerateRequest` добавить
-   `mask_url: HttpUrl | None = None`.
-2. `app/models/task.py` → колонка `mask_url: Mapped[str | None] = mapped_column(Text, nullable=True)`.
-3. `alembic/versions/0003_mask_url.py` → `op.add_column("tasks", sa.Column("mask_url", sa.Text(), nullable=True))`.
-4. `app/services/task_service.py` → сохранить `mask_url=str(req.mask_url) if req.mask_url else None`.
-5. `app/providers/base.py` → в `GenerationRequest` поле `mask_url: str | None = None`.
-6. `app/queues/tasks.py` → прочитать `task.mask_url` и передать в `GenerationRequest`.
-7. `app/providers/comfyui.py` → в `ctx` добавить `"mask_url": req.mask_url or ""`
-   (плейсхолдер `{{mask_url}}` в workflow).
-8. Тесты: `tests/test_image_editing.py` — приём `mask_url`, хранение, проброс.
-
-`POST /uploads` уже принимает PNG (маска — это PNG), отдельный эндпоинт не нужен.
+Остаётся только собрать сами **edit-workflow** в ComfyUI (inpaint/instruct и т.п.,
+см. §4) и создать `EDIT_*` режимы (§3) — код уже всё поддерживает.
 
 ---
 

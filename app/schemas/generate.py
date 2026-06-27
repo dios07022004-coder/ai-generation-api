@@ -13,6 +13,8 @@ class GenerateRequest(BaseModel):
     reference_urls: list[HttpUrl] = Field(default_factory=list, max_length=8)
     # Управляющее видео/поза для переноса движений (motion-driven анимация).
     driving_url: HttpUrl | None = None
+    # Маска области правки для редактирования (бел=править, чёрн=сохранить).
+    mask_url: HttpUrl | None = None
     user_id: str | None = Field(default=None, max_length=128)
     request_id: str | None = Field(default=None, max_length=128)
     # Если источник хочет переопределить callback per-request:

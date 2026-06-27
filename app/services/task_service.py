@@ -42,6 +42,7 @@ def create_task(db: Session, req: GenerateRequest, api_key: ApiKey | None) -> tu
         image_url=str(req.image_url) if req.image_url else None,
         reference_urls=[str(u) for u in req.reference_urls],
         driving_url=str(req.driving_url) if req.driving_url else None,
+        mask_url=str(req.mask_url) if req.mask_url else None,
         user_id=req.user_id,
         api_key_id=api_key_id,
         callback_url=callback_url,
