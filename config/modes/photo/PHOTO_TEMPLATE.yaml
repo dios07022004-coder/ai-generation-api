@@ -1,0 +1,36 @@
+# «Копирование с референса»: лицо/телосложение/локация — с фото пользователя,
+# поза/одежда/выражение/второй персонаж — с референс-картинки.
+#   image_url       = фото пользователя (лицо) → {{image_name}}
+#   reference_urls[0] = референс-образец         → {{reference_0_name}}
+# Граф собирается в ComfyUI: InstantID + ControlNet(OpenPose) + ControlNet(Depth)
+#   + IP-Adapter + (img2img фона пользователя). См. docs/ADVANCED_WORKFLOWS.md.
+id: PHOTO_TEMPLATE
+type: photo
+enabled: false                     # включить ПОСЛЕ сборки photo_template.json в ComfyUI
+
+model: photo_face_model            # RealVisXL (реализм)
+workflow: photo_template           # config/workflows/photo_template.json (экспорт из ComfyUI)
+
+params:
+  width: 1024
+  height: 1024
+  steps: 35
+  cfg: 4.5
+  seed: 0
+  pose_strength: 0.85              # сила копирования позы (ControlNet OpenPose)
+  depth_strength: 0.55             # сила копирования композиции/второго персонажа (Depth)
+  ipadapter_strength: 0.7          # сила копирования одежды/стиля (IP-Adapter)
+  bg_denoise: 0.5                  # сохранение локации пользователя (img2img фона)
+
+preserve_face: true
+reference_strength: 1.0            # InstantID — лицо пользователя
+
+prompt_template: |
+  candid amateur photo, natural daylight, realistic skin with visible pores,
+  slight film grain, true-to-life colors, photorealistic.
+  {{ metadata.change | default('') }}
+
+negative_prompt: |
+  airbrushed, smooth skin, plastic skin, retouched, beauty filter, studio lighting,
+  cartoon, anime, 3d, cgi, render, doll, deformed face, extra fingers, bad hands,
+  blurry, lowres, jpeg artifacts, watermark, text

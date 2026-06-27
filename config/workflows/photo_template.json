@@ -1,0 +1,3 @@
+{
+  "_comment": "ЗАГЛУШКА. Собери граф в ComfyUI (InstantID + ControlNet OpenPose + ControlNet Depth + IP-Adapter + img2img + FaceDetailer), экспортируй 'Save (API Format)' и замени этот файл. Подробности: docs/ADVANCED_WORKFLOWS.md, Часть 2. Плейсхолдеры: {{image_name}} (лицо), {{reference_0_name}} (референс), {{prompt}}, {{negative}}, {{seed}}, {{reference_strength}}, {{param.pose_strength}}, {{param.depth_strength}}, {{param.ipadapter_strength}}, {{param.bg_denoise}}, {{param.steps}}, {{param.cfg}}, {{param.width}}, {{param.height}}, {{model.name}}."
+}
