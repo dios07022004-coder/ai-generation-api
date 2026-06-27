@@ -4,6 +4,9 @@
 
 1. **Docker Compose** — один сервер (быстрый старт, dev/staging).
 2. **Kubernetes** — прод, автоскейл, отдельные GPU-ноды.
+3. **GitHub-цикл** (рекомендуемый способ правок): код в приватном репо, на сервере
+   `git pull` + `docker compose up -d --build`; правки промтов применяются без
+   рестарта через `/admin/modes/reload`. Подробно — [GITHUB.md](GITHUB.md).
 
 ---
 
