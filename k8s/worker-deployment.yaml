@@ -1,0 +1,37 @@
+# GPU-воркер. Один воркер = одна GPU (concurrency=1, prefetch=1).
+# Раскатывать на ноды с GPU (nodeSelector / taints под nvidia).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: aigen
+  labels: { app: worker }
+spec:
+  replicas: 1                       # KEDA масштабирует по длине очереди (см. keda-scaledobject.yaml)
+  selector:
+    matchLabels: { app: worker }
+  template:
+    metadata:
+      labels: { app: worker }
+    spec:
+      # nodeSelector: { cloud.google.com/gke-accelerator: nvidia-tesla-l4 }
+      containers:
+        - name: worker
+          image: ghcr.io/OWNER/ai-generation-api:latest   # заменить (на GPU-образ с CUDA при необходимости)
+          command: ["celery", "-A", "app.queues.celery_app", "worker", "-l", "info", "-Q", "generation,generation_video", "--concurrency=1"]
+          # Для изоляции видео-нагрузки заведи отдельный Deployment с -Q generation_video
+          # на пуле более мощных GPU, а этот оставь только на -Q generation (фото).
+          envFrom:
+            - configMapRef: { name: app-config }
+            - secretRef: { name: app-secrets }
+          resources:
+            requests: { cpu: "500m", memory: "1Gi" }
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+              nvidia.com/gpu: 1       # запрос GPU; убрать для CPU/mock-режима
+          # Корректное завершение долгой генерации:
+          lifecycle:
+            preStop:
+              exec: { command: ["sh", "-c", "sleep 5"] }
+      terminationGracePeriodSeconds: 120

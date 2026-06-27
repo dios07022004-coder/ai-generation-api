@@ -1,0 +1,31 @@
+# ============================================================
+#  VIDEO_VARIATION_17  —  правится контент-менеджером
+#  Меняй ТОЛЬКО prompt_template / negative_prompt / params.
+#  Доступные переменные: {{ image_url }}, {{ user_id }},
+#  {{ request_id }}, {{ metadata.<key> }}
+# ============================================================
+id: VIDEO_VARIATION_17
+type: video
+enabled: true
+
+model: video_generation_model    # ключ из config/models.yaml (i2v)
+workflow: video_i2v              # config/workflows/video_i2v.json
+
+params:
+  width: 768
+  height: 768
+  num_frames: 48
+  fps: 16
+  seed: 0
+
+# Сохранение персонажа/лица из исходного фото:
+preserve_face: true
+reference_strength: 0.7
+
+# >>> ПИШИ ПРОМТ ЗДЕСЬ <<<
+prompt_template: |
+  TODO: промт для VIDEO_VARIATION_17.
+  Анимируй исходное фото, сохраняя лицо и персонажа.
+
+negative_prompt: |
+  lowres, blurry, flicker, distorted face, morphing, watermark

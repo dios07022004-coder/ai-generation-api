@@ -1,0 +1,30 @@
+# ============================================================
+#  PHOTO_MODE_3  —  правится контент-менеджером
+#  Меняй ТОЛЬКО prompt_template / negative_prompt / params.
+#  Доступные переменные в шаблоне: {{ image_url }}, {{ user_id }},
+#  {{ request_id }}, {{ metadata.<key> }}
+# ============================================================
+id: PHOTO_MODE_3
+type: photo
+enabled: true
+
+model: photo_face_model          # ключ из config/models.yaml (SDXL+InstantID)
+workflow: photo_instantid        # config/workflows/photo_instantid.json
+
+params:
+  width: 1024
+  height: 1024
+  steps: 30
+  seed: 0
+
+# Сохранение лица/идентичности (используется workflow'ом):
+preserve_face: true
+reference_strength: 0.8
+
+# >>> ПИШИ ПРОМТ ЗДЕСЬ <<<
+prompt_template: |
+  TODO: промт для PHOTO_MODE_3.
+  Сохрани лицо, персонажа, окружение и композицию исходного фото.
+
+negative_prompt: |
+  lowres, blurry, deformed, distorted face, extra fingers, watermark

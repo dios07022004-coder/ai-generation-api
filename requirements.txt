@@ -1,0 +1,34 @@
+# --- Web / API ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+
+# --- Очередь ---
+celery[redis]==5.4.0
+redis==5.2.1
+
+# --- БД ---
+sqlalchemy==2.0.36
+psycopg[binary]==3.2.3
+alembic==1.14.0
+
+# --- HTTP / провайдеры ---
+httpx==0.28.1
+tenacity==9.0.0
+pillow==11.1.0
+
+# --- Шаблоны режимов / конфиги ---
+jinja2==3.1.5
+pyyaml==6.0.2
+
+# --- Хранилище (S3 / R2 / MinIO) ---
+boto3==1.35.92
+
+# --- Логи / метрики ---
+python-json-logger==3.2.1
+prometheus-client==0.21.1
+
+# --- Безопасность (internal JWT) ---
+pyjwt==2.10.1

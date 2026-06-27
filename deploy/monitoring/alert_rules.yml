@@ -1,0 +1,30 @@
+groups:
+  - name: ai-generation-api
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate(errors_total[5m])) > 1
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Высокий уровень ошибок генерации"
+
+      - alert: QueueBacklog
+        expr: queue_size > 100
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Очередь задач растёт (backlog > 100)"
+
+      - alert: SlowGeneration
+        expr: histogram_quantile(0.95, sum(rate(generation_seconds_bucket[10m])) by (le)) > 300
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "p95 времени генерации > 5 минут"
+
+      - alert: ApiDown
+        expr: up{job="ai-generation-api"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "API недоступен для Prometheus"

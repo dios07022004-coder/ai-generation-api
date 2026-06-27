@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: aigen
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+
+  GENERATION_PROVIDER: "comfyui"        # mock | comfyui
+  COMFYUI_URL: "http://comfyui:8188"
+  COMFYUI_TIMEOUT: "600"
+
+  MODES_DIR: "/app/config/modes"
+  WORKFLOWS_DIR: "/app/config/workflows"
+  MODELS_CONFIG: "/app/config/models.yaml"
+
+  STORAGE_PROVIDER: "r2"                # local | s3 | r2 | minio
+  PUBLIC_BASE_URL: "https://api.example.com"
+
+  TASK_SOFT_TIMEOUT: "540"
+  TASK_HARD_TIMEOUT: "600"
+  TASK_MAX_RETRIES: "3"
+  CALLBACK_MAX_RETRIES: "5"
+
+  API_KEY_HEADER: "X-API-Key"
+
+  RATE_LIMIT_PER_API_KEY: "120"
+  RATE_LIMIT_PER_USER: "60"
+  RATE_LIMIT_PER_IP: "240"
+  RATE_LIMIT_WINDOW_SECONDS: "60"

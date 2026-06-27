@@ -1,0 +1,29 @@
+# Масштабирование GPU-воркеров по длине очереди Celery в Redis (KEDA).
+# Требует установленного KEDA: https://keda.sh
+# Celery с Redis-брокером хранит задачи в списке с именем очереди ("generation").
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: worker-scaler
+  namespace: aigen
+spec:
+  scaleTargetRef:
+    name: worker
+  minReplicaCount: 1
+  maxReplicaCount: 10               # не больше, чем доступно GPU
+  cooldownPeriod: 120
+  pollingInterval: 15
+  triggers:
+    - type: redis
+      metadata:
+        address: redis:6379
+        listName: generation        # очередь фото
+        listLength: "2"             # >2 задач на воркер → добавить реплику
+        databaseIndex: "1"          # БД брокера (CELERY_BROKER_URL .../1)
+      # authenticationRef при пароле Redis
+    - type: redis
+      metadata:
+        address: redis:6379
+        listName: generation_video  # очередь видео
+        listLength: "1"             # видео тяжелее → масштабируем агрессивнее
+        databaseIndex: "1"

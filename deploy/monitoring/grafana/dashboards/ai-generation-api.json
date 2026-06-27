@@ -1,0 +1,47 @@
+{
+  "title": "AI Generation API",
+  "uid": "aigen-api",
+  "schemaVersion": 39,
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "type": "timeseries", "title": "Requests per second",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [{ "expr": "sum(rate(api_requests_total[1m]))", "legendFormat": "rps" }]
+    },
+    {
+      "type": "timeseries", "title": "Tasks per minute",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [{ "expr": "sum(rate(tasks_total[1m])) * 60", "legendFormat": "{{task_type}}" }]
+    },
+    {
+      "type": "timeseries", "title": "Generation time p50/p95",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "histogram_quantile(0.5, sum(rate(generation_seconds_bucket[5m])) by (le))", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(generation_seconds_bucket[5m])) by (le))", "legendFormat": "p95" }
+      ]
+    },
+    {
+      "type": "timeseries", "title": "Queue size",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 8 },
+      "targets": [{ "expr": "queue_size", "legendFormat": "queue" }]
+    },
+    {
+      "type": "timeseries", "title": "Error rate",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 },
+      "targets": [{ "expr": "sum(rate(errors_total[5m])) by (where)", "legendFormat": "{{where}}" }]
+    },
+    {
+      "type": "timeseries", "title": "GPU utilization (dcgm)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [{ "expr": "DCGM_FI_DEV_GPU_UTIL", "legendFormat": "gpu {{gpu}}" }]
+    },
+    {
+      "type": "timeseries", "title": "GPU memory used (dcgm)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [{ "expr": "DCGM_FI_DEV_FB_USED", "legendFormat": "gpu {{gpu}}" }]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+# Логические имена моделей → реальные настройки.
+# Режимы (config/modes/*) ссылаются на ключи отсюда полем `model`.
+# Менять модель можно здесь, не трогая код.
+
+photo_generation_model:
+  name: flux1-dev                      # checkpoint в ComfyUI
+  type: image
+  # Доп. параметры по умолчанию для движка/workflow:
+  steps: 28
+  cfg: 3.5
+  sampler: euler
+
+photo_face_model:
+  name: sdxl-instantid                 # SDXL + InstantID для сохранения лица
+  type: image
+  steps: 30
+  cfg: 4.0
+
+video_generation_model:
+  name: wan-2.1-i2v                     # image-to-video
+  type: video
+  steps: 30
+  fps: 16

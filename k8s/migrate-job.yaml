@@ -1,0 +1,18 @@
+# Запускает миграции БД перед раскаткой. Хук: запускать до api/worker.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  namespace: aigen
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: ghcr.io/OWNER/ai-generation-api:latest   # заменить
+          command: ["alembic", "upgrade", "head"]
+          envFrom:
+            - configMapRef: { name: app-config }
+            - secretRef: { name: app-secrets }

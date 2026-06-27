@@ -1,0 +1,10 @@
+{
+  "_comment": "ЗАГЛУШКА. Замени на реальный ComfyUI API-workflow для image-to-video (Wan/CogVideoX/LTX). Сохранение персонажа/лица — через ноды загрузки исходного фото {{image_url}} и i2v. Плейсхолдеры см. README.md.",
+  "_example_nodes": {
+    "load_reference_image": {"image_url": "{{image_url}}"},
+    "positive_prompt": {"text": "{{prompt}}"},
+    "negative_prompt": {"text": "{{negative}}"},
+    "i2v_sampler": {"seed": "{{seed}}", "frames": "{{param.num_frames}}", "fps": "{{param.fps}}"},
+    "video_combine": {"filename_prefix": "out", "format": "video/h264-mp4"}
+  }
+}

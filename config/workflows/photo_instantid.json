@@ -1,0 +1,11 @@
+{
+  "_comment": "ЗАГЛУШКА. Замени на реальный ComfyUI API-workflow (Save API Format). Ноды InstantID/PuLID обеспечивают сохранение лица. Плейсхолдеры см. в README.md этой папки.",
+  "_example_nodes": {
+    "load_reference_image": {"image_url": "{{image_url}}"},
+    "positive_prompt": {"text": "{{prompt}}"},
+    "negative_prompt": {"text": "{{negative}}"},
+    "instantid": {"weight": "{{reference_strength}}"},
+    "ksampler": {"seed": "{{seed}}", "steps": "{{param.steps}}"},
+    "save_image": {"filename_prefix": "out"}
+  }
+}
