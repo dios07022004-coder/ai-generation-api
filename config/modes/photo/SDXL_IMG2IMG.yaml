@@ -1,0 +1,22 @@
+# Готовый рабочий тест-режим image-to-image на SDXL (нужно прикрепить фото).
+# Преобразует загруженное фото по промту (лицо НЕ сохраняет — это базовый SDXL,
+# сохранение лица будет в режиме на InstantID).
+id: SDXL_IMG2IMG
+type: photo
+enabled: true
+model: photo_generation_model
+workflow: sdxl_img2img
+
+params:
+  width: 1024
+  height: 1024
+  steps: 25
+  cfg: 5.0
+  seed: 0
+  denoise: 0.55                      # ниже → ближе к оригиналу, выше → сильнее меняет
+
+prompt_template: |
+  {{ metadata.change | default('enhance this photo, photorealistic, high detail, sharp focus') }}
+
+negative_prompt: |
+  lowres, blurry, deformed, bad anatomy, watermark, text

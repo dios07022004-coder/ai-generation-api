@@ -1,0 +1,20 @@
+# Готовый рабочий тест-режим (txt2img на SDXL). Картинка из текста, фото не нужно.
+# Для проверки, что генерация на сервере реально работает.
+id: SDXL_TEST
+type: photo
+enabled: true
+model: photo_generation_model       # sd_xl_base_1.0.safetensors (его качает bootstrap)
+workflow: sdxl_txt2img              # готовый граф
+
+params:
+  width: 1024
+  height: 1024
+  steps: 25
+  cfg: 5.0
+  seed: 0
+
+prompt_template: |
+  {{ metadata.change | default('a cinematic portrait of a person, soft studio lighting, high detail, 85mm') }}
+
+negative_prompt: |
+  lowres, blurry, deformed, bad anatomy, extra fingers, watermark, text
