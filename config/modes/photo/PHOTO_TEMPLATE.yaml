@@ -1,9 +1,10 @@
-# «Копирование с референса»: лицо/телосложение/локация — с фото пользователя,
-# поза/одежда/выражение/второй персонаж — с референс-картинки.
-#   image_url       = фото пользователя (лицо) → {{image_name}}
-#   reference_urls[0] = референс-образец         → {{reference_0_name}}
-# Граф собирается в ComfyUI: InstantID + ControlNet(OpenPose) + ControlNet(Depth)
-#   + IP-Adapter + (img2img фона пользователя). См. docs/ADVANCED_WORKFLOWS.md.
+# Сохраняем ПОЛЬЗОВАТЕЛЯ, с референса берём позу/одежду/выражение:
+#   ЛИЦО, ВОЛОСЫ/ГОЛОВА, ФОН/ЛОКАЦИЯ, ТЕЛОСЛОЖЕНИЕ → с фото юзера (img2img базы = его фото)
+#   ПОЗА → ControlNet OpenPose(референс);  ОДЕЖДА → IP-Adapter(референс)
+#   ВЫРАЖЕНИЕ ЛИЦА → OpenPose face-keypoints(референс);  точное ЛИЦО → ReActor(фото юзера)
+#   image_url        = фото пользователя  → {{image_name}}
+#   reference_urls[0] = референс           → {{reference_0_name}}
+# Граф: config/workflows/photo_template.json (img2img юзера + ControlNet + IP-Adapter + ReActor).
 id: PHOTO_TEMPLATE
 type: photo
 enabled: true                      # workflow photo_template.json готов (InstantID+OpenPose+IP-Adapter)
@@ -17,10 +18,10 @@ params:
   steps: 35
   cfg: 4.5
   seed: 0
-  pose_strength: 1.0               # сила копирования позы (ControlNet OpenPose); ↑=ближе к референсу
-  depth_strength: 0.55             # сила копирования композиции/второго персонажа (Depth)
-  ipadapter_strength: 0.9          # сила копирования одежды/стиля (IP-Adapter); ↑=ближе к референсу
-  bg_denoise: 0.8                  # img2img ТВОЕГО фото: ниже=ближе к тебе, выше=сильнее под референс
+  pose_strength: 1.0               # ПОЗА с референса (ControlNet); поза не совпала → ↑ до 1.2-1.3
+  depth_strength: 0.55             # (не используется в текущем графе)
+  ipadapter_strength: 0.9          # ОДЕЖДА с референса (IP-Adapter); одежда не та → ↑ до 1.0-1.1
+  bg_denoise: 0.65                 # сколько менять твоё фото: голова/фон уходят → ↓ 0.55; поза слабая → ↑ 0.7
 
 preserve_face: true
 reference_strength: 1.0            # InstantID — лицо пользователя
