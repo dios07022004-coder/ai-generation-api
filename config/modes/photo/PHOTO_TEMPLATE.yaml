@@ -20,7 +20,7 @@ params:
   pose_strength: 0.85              # сила копирования позы (ControlNet OpenPose)
   depth_strength: 0.55             # сила копирования композиции/второго персонажа (Depth)
   ipadapter_strength: 0.7          # сила копирования одежды/стиля (IP-Adapter)
-  bg_denoise: 0.5                  # сохранение локации пользователя (img2img фона)
+  bg_denoise: 0.65                 # img2img ТВОЕГО фото: ниже=ближе к тебе, выше=сильнее новая поза
 
 preserve_face: true
 reference_strength: 1.0            # InstantID — лицо пользователя

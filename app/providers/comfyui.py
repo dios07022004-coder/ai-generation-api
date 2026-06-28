@@ -148,10 +148,18 @@ class ComfyUIProvider(GenerationProvider):
                     progress(min(90, 10 + int(waited)))
                     continue
 
-                outputs = hist[prompt_id].get("outputs", {})
+                entry = hist[prompt_id]
+                outputs = entry.get("outputs", {})
                 file_info, ext, ctype = self._extract_output(outputs)
                 if file_info is None:
-                    raise ProviderError("comfyui finished without file output")
+                    # Достаём реальную ошибку ComfyUI (какая нода упала), а не общее «нет файла».
+                    detail = ""
+                    for m in entry.get("status", {}).get("messages", []):
+                        if isinstance(m, list) and len(m) == 2 and m[0] == "execution_error":
+                            d = m[1]
+                            detail = f"{d.get('node_type')}: {d.get('exception_message')}"
+                            break
+                    raise ProviderError(f"comfyui error: {detail or 'no file output'}")
 
                 data = self._download(client, file_info)
                 progress(100)

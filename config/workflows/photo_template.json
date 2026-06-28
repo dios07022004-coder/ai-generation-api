@@ -3,13 +3,13 @@
     "class_type": "CheckpointLoaderSimple",
     "inputs": { "ckpt_name": "{{model.name}}" }
   },
-  "20": {
-    "class_type": "LoadImage",
-    "inputs": { "image": "{{reference_0_name}}" }
-  },
   "13": {
     "class_type": "LoadImage",
     "inputs": { "image": "{{image_name}}" }
+  },
+  "20": {
+    "class_type": "LoadImage",
+    "inputs": { "image": "{{reference_0_name}}" }
   },
   "39": {
     "class_type": "CLIPTextEncode",
@@ -21,7 +21,53 @@
   },
   "21": {
     "class_type": "VAEEncode",
-    "inputs": { "pixels": ["20", 0], "vae": ["4", 2] }
+    "inputs": { "pixels": ["13", 0], "vae": ["4", 2] }
+  },
+  "30": {
+    "class_type": "DWPreprocessor",
+    "inputs": {
+      "image": ["20", 0],
+      "detect_hand": "enable",
+      "detect_body": "enable",
+      "detect_face": "enable",
+      "resolution": 512,
+      "bbox_detector": "yolox_l.onnx",
+      "pose_estimator": "dw-ll_ucoco_384_bs5.torchscript.pt"
+    }
+  },
+  "31": {
+    "class_type": "ControlNetLoader",
+    "inputs": { "control_net_name": "openpose-sdxl.safetensors" }
+  },
+  "32": {
+    "class_type": "ControlNetApplyAdvanced",
+    "inputs": {
+      "positive": ["39", 0],
+      "negative": ["40", 0],
+      "control_net": ["31", 0],
+      "image": ["30", 0],
+      "strength": {{param.pose_strength}},
+      "start_percent": 0.0,
+      "end_percent": 1.0
+    }
+  },
+  "33": {
+    "class_type": "IPAdapterUnifiedLoader",
+    "inputs": { "model": ["4", 0], "preset": "STANDARD (medium strength)" }
+  },
+  "34": {
+    "class_type": "IPAdapterAdvanced",
+    "inputs": {
+      "model": ["33", 0],
+      "ipadapter": ["33", 1],
+      "image": ["20", 0],
+      "weight": {{param.ipadapter_strength}},
+      "weight_type": "linear",
+      "combine_embeds": "concat",
+      "start_at": 0.0,
+      "end_at": 1.0,
+      "embeds_scaling": "V only"
+    }
   },
   "3": {
     "class_type": "KSampler",
@@ -32,9 +78,9 @@
       "sampler_name": "dpmpp_2m",
       "scheduler": "karras",
       "denoise": {{param.bg_denoise}},
-      "model": ["4", 0],
-      "positive": ["39", 0],
-      "negative": ["40", 0],
+      "model": ["34", 0],
+      "positive": ["32", 0],
+      "negative": ["32", 1],
       "latent_image": ["21", 0]
     }
   },
