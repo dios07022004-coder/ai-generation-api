@@ -17,10 +17,10 @@ params:
   steps: 35
   cfg: 4.5
   seed: 0
-  pose_strength: 0.85              # сила копирования позы (ControlNet OpenPose)
+  pose_strength: 1.0               # сила копирования позы (ControlNet OpenPose); ↑=ближе к референсу
   depth_strength: 0.55             # сила копирования композиции/второго персонажа (Depth)
-  ipadapter_strength: 0.7          # сила копирования одежды/стиля (IP-Adapter)
-  bg_denoise: 0.65                 # img2img ТВОЕГО фото: ниже=ближе к тебе, выше=сильнее новая поза
+  ipadapter_strength: 0.9          # сила копирования одежды/стиля (IP-Adapter); ↑=ближе к референсу
+  bg_denoise: 0.8                  # img2img ТВОЕГО фото: ниже=ближе к тебе, выше=сильнее под референс
 
 preserve_face: true
 reference_strength: 1.0            # InstantID — лицо пользователя
