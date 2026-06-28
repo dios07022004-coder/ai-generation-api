@@ -1,33 +1,36 @@
 # ============================================================
-#  VIDEO_VARIATION_35 — редактируется контент-менеджером.
-#  Меняй ТОЛЬКО prompt_template / negative_prompt / params.
-#  Якоря "keep the SAME face/identity/location" НЕ удалять.
+#  VIDEO_VARIATION_35 вЂ” golden_hour
+#  Р РµРґР°РєС‚РёСЂСѓРµС‚СЃСЏ РєРѕРЅС‚РµРЅС‚-РјРµРЅРµРґР¶РµСЂРѕРј: РјРµРЅСЏР№ РўРћР›Р¬РљРћ prompt_template /
+#  negative_prompt / params. РЇРєРѕСЂСЏ "keep SAME face/identity/location" РќР• СѓРґР°Р»СЏС‚СЊ.
 # ============================================================
 id: VIDEO_VARIATION_35
 type: video
 enabled: true
 
-model: video_generation_model    # ключ из config/models.yaml (i2v: LTX / Wan / CogVideoX)
+model: video_generation_model    # РєР»СЋС‡ РёР· config/models.yaml (Wan 2.2 i2v)
 workflow: video_i2v              # config/workflows/video_i2v.json
 
 params:
-  width: 768
-  height: 768
-  num_frames: 49
+  width: 480
+  height: 832
+  num_frames: 81        # ~5 c РїСЂРё 16 fps
   fps: 16
+  steps: 8              # lightning: Р±Р°Р»Р°РЅСЃ СЃРєРѕСЂРѕСЃС‚СЊ/РєР°С‡РµСЃС‚РІРѕ
+  cfg: 1.0              # СЃ lightning-LoRA cfg=1.0
   seed: 0
 
 preserve_face: true
 reference_strength: 0.85
 
 prompt_template: |
-  Animate the person from the reference image into a short natural video.
+  Animate the person from the reference image into a short realistic 5-second video.
   Keep the SAME face and identity across ALL frames; the person must stay recognizable.
   Keep the SAME location and background as in the source image; do not change the scene.
-  {{ metadata.change | default('subtle natural motion, gentle camera movement') }}.
-  photorealistic, consistent identity, smooth motion, stable face.
+  Motion: warm golden-hour light slowly shifting across the scene.
+  {{ metadata.change | default('') }}
+  photorealistic, consistent identity, smooth natural motion, stable face and correct hands.
 
 negative_prompt: |
-  identity drift, morphing face, different person, distorted or deformed face, flicker,
-  warping background, changed location, extra people, duplicate, text, watermark,
-  lowres, blurry
+  identity drift, morphing face, different person, deformed or distorted face,
+  extra fingers, bad hands, deformed limbs, flicker, warping background, changed location,
+  extra people, duplicate, text, watermark, lowres, blurry

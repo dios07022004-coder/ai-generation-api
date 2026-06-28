@@ -16,7 +16,8 @@ photo_face_model:
   cfg: 4.5
 
 video_generation_model:
-  name: wan-2.1-i2v                     # image-to-video
-  type: video
-  steps: 30
+  name: wan2.2_i2v_14B                  # Wan 2.2 image-to-video (high+low noise + lightning LoRA)
+  type: video                          # workflow video_i2v: high/low/clip/vae заданы внутри workflow
+  steps: 8                             # 8 шагов (lightning) — баланс скорость/качество на 4090
+  cfg: 1.0                             # с lightning-LoRA cfg обязан быть 1.0
   fps: 16
