@@ -56,7 +56,9 @@ if [ ! -f .env ]; then
   cp .env.example .env
   sed -i "s|^GENERATION_PROVIDER=.*|GENERATION_PROVIDER=comfyui|" .env
   sed -i "s|^COMFYUI_URL=.*|COMFYUI_URL=http://host.docker.internal:8188|" .env
-  sed -i "s|^SAFETY_PROVIDER=.*|SAFETY_PROVIDER=insightface|" .env
+  # safety=none на старте (insightface в контейнере воркера вызывал зависания);
+  # включить 21+ позже отдельно (см. docs). Для adult-платформы это обязательно.
+  sed -i "s|^SAFETY_PROVIDER=.*|SAFETY_PROVIDER=none|" .env
   sed -i "s|^PUBLIC_BASE_URL=.*|PUBLIC_BASE_URL=${PUBLIC_BASE_URL//\//\\/}|" .env
   WS=$(openssl rand -hex 24); JW=$(openssl rand -hex 24)
   sed -i "s|^WEBHOOK_SIGNING_SECRET=.*|WEBHOOK_SIGNING_SECRET=$WS|" .env
@@ -99,8 +101,19 @@ dl(){ aria2c -x8 -s8 -c -o "$2" -d "$3" "$1" || echo "⚠️ не скачало
 # SDXL base (пример; можно заменить на свой чекпоинт):
 dl "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors" \
    "sd_xl_base_1.0.safetensors" "$M/checkpoints"
-echo "TODO(модели): InstantID (ip-adapter.bin + ControlNet), antelopev2, LTX-Video —"
-echo "  скачать в соответствующие папки $M/* (см. README нод). Часть — через HF_TOKEN."
+# --- Wan 2.2 i2v (ВИДЕО — основной приоритет; ungated Comfy-Org) ------------
+log "Модели Wan 2.2 i2v (видео)"
+mkdir -p "$M/diffusion_models" "$M/text_encoders" "$M/vae"
+WAN="https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files"
+dl "$WAN/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors" "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors" "$M/diffusion_models"
+dl "$WAN/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"  "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"  "$M/diffusion_models"
+dl "$WAN/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors"   "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors" "$M/loras"
+dl "$WAN/loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors"    "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors"  "$M/loras"
+dl "$WAN/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"             "umt5_xxl_fp8_e4m3fn_scaled.safetensors" "$M/text_encoders"
+dl "$WAN/vae/wan_2.1_vae.safetensors"                                       "wan_2.1_vae.safetensors" "$M/vae"
+
+echo "TODO(фото-модели, если нужно): InstantID (ip-adapter.bin + ControlNet), antelopev2,"
+echo "  ReActor (inswapper_128 + GFPGAN), RealVisXL — скачать в $M/* (часть через HF_TOKEN)."
 
 deactivate
 
@@ -112,7 +125,9 @@ Description=ComfyUI
 After=network.target
 [Service]
 WorkingDirectory=$COMFY_DIR
-ExecStart=$COMFY_DIR/venv/bin/python main.py --listen 0.0.0.0 --port 8188 --highvram
+# БЕЗ --highvram (вызывает OOM при смене high/low модели Wan на 24 ГБ);
+# --fp32-vae убирает чёрные кадры. RAM 64 ГБ кеширует модели → быстрая смена high/low.
+ExecStart=$COMFY_DIR/venv/bin/python main.py --listen 0.0.0.0 --port 8188 --fp32-vae
 Restart=always
 User=root
 [Install]
