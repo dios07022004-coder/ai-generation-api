@@ -46,8 +46,10 @@
     </div>
     <label>Что изменить / инструкция (metadata.change)</label>
     <input id="change" placeholder="cinematic portrait, studio light"/>
-    <label>Фото (опционально — для image-to-image)</label>
+    <label>Фото (лицо — для image-to-image / InstantID)</label>
     <input id="file" type="file" accept="image/*"/>
+    <label>Референс (поза/одежда/сцена — для PHOTO_TEMPLATE)</label>
+    <input id="reffile" type="file" accept="image/*"/>
     <button id="go" onclick="run()">Сгенерировать</button>
     <button onclick="listModes()" style="background:#374151">Показать режимы</button>
   </div>
@@ -84,11 +86,22 @@ async function run() {
       image_url = (await up.json()).image_url;
       log("Фото загружено.");
     }
+    let reference_urls = [];
+    const rf = $("reffile").files[0];
+    if (rf) {
+      log("Загружаю референс...");
+      const fd2 = new FormData(); fd2.append("file", rf);
+      const up2 = await fetch(`${base}/uploads`, { method:"POST", headers: headers(), body: fd2 });
+      if (!up2.ok) throw new Error("ref upload: " + up2.status + " " + await up2.text());
+      reference_urls = [(await up2.json()).image_url];
+      log("Референс загружен.");
+    }
     const body = {
       task_type: $("ttype").value, mode: $("mode").value.trim(),
       metadata: { change: $("change").value },
     };
     if (image_url) body.image_url = image_url;
+    if (reference_urls.length) body.reference_urls = reference_urls;
     log("Отправляю задачу...");
     const gen = await fetch(`${base}/generate`, {
       method:"POST", headers: { ...headers(), "Content-Type":"application/json" },
