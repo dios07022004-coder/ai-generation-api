@@ -19,33 +19,6 @@
     "class_type": "CLIPTextEncode",
     "inputs": { "text": "{{negative}}", "clip": ["4", 1] }
   },
-  "11": {
-    "class_type": "InstantIDModelLoader",
-    "inputs": { "instantid_file": "ip-adapter.bin" }
-  },
-  "38": {
-    "class_type": "InstantIDFaceAnalysis",
-    "inputs": { "provider": "CPU" }
-  },
-  "16": {
-    "class_type": "ControlNetLoader",
-    "inputs": { "control_net_name": "instantid.safetensors" }
-  },
-  "60": {
-    "class_type": "ApplyInstantID",
-    "inputs": {
-      "instantid": ["11", 0],
-      "insightface": ["38", 0],
-      "control_net": ["16", 0],
-      "image": ["13", 0],
-      "model": ["4", 0],
-      "positive": ["39", 0],
-      "negative": ["40", 0],
-      "weight": {{reference_strength}},
-      "start_at": 0.0,
-      "end_at": 1.0
-    }
-  },
   "30": {
     "class_type": "DWPreprocessor",
     "inputs": {
@@ -65,8 +38,8 @@
   "32": {
     "class_type": "ControlNetApplyAdvanced",
     "inputs": {
-      "positive": ["60", 1],
-      "negative": ["60", 2],
+      "positive": ["39", 0],
+      "negative": ["40", 0],
       "control_net": ["31", 0],
       "image": ["30", 0],
       "strength": {{param.pose_strength}},
@@ -76,7 +49,7 @@
   },
   "33": {
     "class_type": "IPAdapterUnifiedLoader",
-    "inputs": { "model": ["60", 0], "preset": "STANDARD (medium strength)" }
+    "inputs": { "model": ["4", 0], "preset": "STANDARD (medium strength)" }
   },
   "34": {
     "class_type": "IPAdapterAdvanced",
@@ -115,8 +88,26 @@
     "class_type": "VAEDecode",
     "inputs": { "samples": ["3", 0], "vae": ["4", 2] }
   },
+  "50": {
+    "class_type": "ReActorFaceSwap",
+    "inputs": {
+      "enabled": true,
+      "input_image": ["8", 0],
+      "source_image": ["13", 0],
+      "swap_model": "inswapper_128.onnx",
+      "facedetection": "retinaface_resnet50",
+      "face_restore_model": "GFPGANv1.4.pth",
+      "face_restore_visibility": 1.0,
+      "codeformer_weight": 0.5,
+      "detect_gender_input": "no",
+      "detect_gender_source": "no",
+      "input_faces_index": "0",
+      "source_faces_index": "0",
+      "console_log_level": 1
+    }
+  },
   "9": {
     "class_type": "SaveImage",
-    "inputs": { "filename_prefix": "out", "images": ["8", 0] }
+    "inputs": { "filename_prefix": "out", "images": ["50", 0] }
   }
 }
