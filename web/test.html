@@ -33,7 +33,7 @@
     <label>Базовый URL API</label>
     <input id="base" value="" placeholder="http://45.80.129.30:8000"/>
     <label>API-ключ (X-API-Key)</label>
-    <input id="key" placeholder="sk_..."/>
+    <input id="key" value="sk_JxTRdKuSkUg_5AuCJPgLPVGUpaEnccjV2szaS-SqVUY"/>
     <div class="row">
       <div>
         <label>Тип</label>
@@ -41,7 +41,7 @@
       </div>
       <div>
         <label>Режим (mode)</label>
-        <input id="mode" value="PHOTO_MODE_1"/>
+        <select id="mode"></select>
       </div>
     </div>
     <label>Что изменить / инструкция (metadata.change)</label>
@@ -62,6 +62,20 @@ const $ = id => document.getElementById(id);
 $("base").value = location.origin.startsWith("http") ? location.origin : "http://45.80.129.30:8000";
 const log = m => { $("log").textContent += m + "\n"; };
 const headers = () => ({ "X-API-Key": $("key").value.trim() });
+
+async function populateModes() {
+  try {
+    const r = await fetch(`${$("base").value}/modes?task_type=${$("ttype").value}`, { headers: headers() });
+    const d = await r.json();
+    const sel = $("mode"); sel.innerHTML = "";
+    (d.modes || []).filter(m => m.enabled).forEach(m => {
+      const o = document.createElement("option");
+      o.value = m.id; o.textContent = m.id; sel.appendChild(o);
+    });
+  } catch (e) { /* нет ключа/сети — оставим пусто */ }
+}
+$("ttype").addEventListener("change", populateModes);
+populateModes();
 
 async function listModes() {
   $("log").textContent = "";

@@ -43,6 +43,7 @@ services:
     volumes:
       - ./storage:/app/storage
       - ./config:/app/config
+      - ./web:/app/web
     depends_on:
       postgres:
         condition: service_healthy
