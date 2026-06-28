@@ -52,14 +52,19 @@
     }
   },
   "33": {
-    "class_type": "IPAdapterUnifiedLoader",
-    "inputs": { "model": ["4", 0], "preset": "STANDARD (medium strength)" }
+    "class_type": "IPAdapterModelLoader",
+    "inputs": { "ipadapter_file": "ip-adapter_sdxl_vit-h.safetensors" }
+  },
+  "35": {
+    "class_type": "CLIPVisionLoader",
+    "inputs": { "clip_name": "CLIP-ViT-H-14.safetensors" }
   },
   "34": {
     "class_type": "IPAdapterAdvanced",
     "inputs": {
-      "model": ["33", 0],
-      "ipadapter": ["33", 1],
+      "model": ["4", 0],
+      "ipadapter": ["33", 0],
+      "clip_vision": ["35", 0],
       "image": ["20", 0],
       "weight": {{param.ipadapter_strength}},
       "weight_type": "linear",
