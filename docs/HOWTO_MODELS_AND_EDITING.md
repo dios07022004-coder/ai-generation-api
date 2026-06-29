@@ -98,6 +98,15 @@ ls -lah /root/ComfyUI/models/<ПАПКА>/
 ```
 (размер должен совпадать с ожидаемым; «обрезанный» файл = битая модель).
 
+### Опционально: массовая загрузка по манифесту (удобно для пачки моделей)
+Если моделей много, используй скрипт:
+```
+cp scripts/ops/model_manifest.example.tsv scripts/ops/model_manifest.tsv
+# заполни URL в scripts/ops/model_manifest.tsv
+bash scripts/ops/download_models_from_manifest.sh scripts/ops/model_manifest.tsv
+```
+Скрипт кладёт файлы в нужные подпапки ComfyUI и проверяет наличие/размер.
+
 ---
 
 ## 3. Подключить модель — ДВА сценария
@@ -132,6 +141,11 @@ Flux вместо SDXL, и т.п.
 5. В нужных режимах укажи `workflow: <имя>` (без `.json`).
 6. При желании добавь модель в `models.yaml` (для дефолтов steps/cfg) и сошлись `model:`.
 7. Применить (§5) и тест (§6).
+
+Быстрая установка экспортированного JSON в `video_i2v.json`:
+```
+bash scripts/ops/install_video_workflow.sh /tmp/video_i2v_export.json
+```
 
 > Если сам не уверен с плейсхолдерами — просто пришли мне «Save (API Format)» JSON и скажи,
 > какая нода = фото пользователя / референс. Я расставлю плейсхолдеры за минуту.
@@ -175,6 +189,20 @@ Flux вместо SDXL, и т.п.
 | **скачал/заменил файл модели** в ComfyUI | дополнительно `systemctl restart comfyui` (чтобы ComfyUI увидел новый файл) |
 | хочешь без рестарта воркера | `POST /admin/modes/reload` (нужен internal-JWT) |
 
+Удобный вариант одной командой:
+```
+# только worker
+bash scripts/ops/apply_config_changes.sh
+
+# worker + comfyui (когда менял файлы моделей)
+RESTART_COMFYUI=1 bash scripts/ops/apply_config_changes.sh
+
+# worker + reload API
+RELOAD_URL="http://localhost:8000/admin/modes/reload" \
+INTERNAL_JWT="<internal-jwt>" \
+bash scripts/ops/apply_config_changes.sh
+```
+
 > `config/` примонтирован в контейнеры — поэтому правки конфигов подхватываются после `restart worker`,
 > пересборка (`--build`) НЕ нужна. Пересборка нужна только если менялся **код** (`app/...`).
 
@@ -193,6 +221,11 @@ Flux вместо SDXL, и т.п.
    docker compose logs --tail=40 worker          # ошибки нашего пайплайна (видна точная причина ComfyUI)
    journalctl -u comfyui --no-pager | tail -40   # ошибки самого ComfyUI (упавшая нода)
    ```
+
+Быстрый health-check перед тестами:
+```
+bash scripts/ops/check_runtime_health.sh
+```
 
 ---
 
@@ -241,3 +274,35 @@ Keep the SAME location and background as in the source image.
 5. `systemctl restart comfyui` (если менял файлы моделей) + `docker compose restart worker`.
 6. `POST /modes/{id}/preview` → тест на `:8000/ui/test.html`.
 7. ошибки → `docker compose logs --tail=40 worker` и `journalctl -u comfyui | tail -40`.
+
+---
+
+## 10. Быстрая автоматическая валидация 40 видео-режимов
+
+Проверка структуры YAML и обязательных якорей (без API):
+```
+python scripts/ops/validate_video_modes.py
+```
+
+Проверка preview для всех `VIDEO_VARIATION_1..40`:
+```
+python scripts/ops/validate_video_modes.py \
+  --api-base-url http://localhost:8000 \
+  --api-key "sk_..." \
+  --image-url "https://.../test.jpg"
+```
+
+Полный smoke (generate + polling) для всех 40 режимов:
+```
+python scripts/ops/validate_video_modes.py \
+  --api-base-url http://localhost:8000 \
+  --api-key "sk_..." \
+  --image-url "https://.../test.jpg" \
+  --smoke \
+  --smoke-timeout-seconds 240
+```
+
+Проверка, что `config/workflows/video_i2v.json` не заглушка и содержит нужные плейсхолдеры:
+```
+python scripts/ops/validate_video_workflow.py --workflow config/workflows/video_i2v.json
+```

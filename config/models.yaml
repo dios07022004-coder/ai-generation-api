@@ -16,8 +16,15 @@ photo_face_model:
   cfg: 4.5
 
 video_generation_model:
-  name: wan2.2_i2v_14B                  # Wan 2.2 image-to-video (high+low noise + lightning LoRA)
+  name: wan2.2_i2v_14B                  # единая базовая модель для VIDEO_VARIATION_1..40
   type: video                          # workflow video_i2v: high/low/clip/vae заданы внутри workflow
   steps: 8                             # 8 шагов (lightning) — баланс скорость/качество на 4090
   cfg: 1.0                             # с lightning-LoRA cfg обязан быть 1.0
   fps: 16
+
+# Рекомендуемый стек файлов для Wan i2v в ComfyUI (через workflow-ноды):
+# - diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors
+# - diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors
+# - loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors
+# - vae/wan2.1_vae.safetensors
+# - text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors

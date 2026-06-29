@@ -1,0 +1,13 @@
+# target_subdir	url	expected_size_bytes(optional)
+# Supported target_subdir values:
+# checkpoints | diffusion_models | loras | vae | text_encoders | controlnet | clip_vision | ipadapter
+#
+# Fill URLs from your provider mirror, then run:
+#   bash scripts/ops/download_models_from_manifest.sh scripts/ops/model_manifest.tsv
+
+diffusion_models	https://example.com/wan2.2_i2v_14B_fp8_scaled.safetensors
+loras	https://example.com/wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors
+diffusion_models	https://example.com/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors
+diffusion_models	https://example.com/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors
+vae	https://example.com/wan2.1_vae.safetensors
+text_encoders	https://example.com/umt5_xxl_fp8_e4m3fn_scaled.safetensors
