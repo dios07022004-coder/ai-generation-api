@@ -116,6 +116,14 @@ def process_generation(self: CeleryTask, task_id: str) -> None:
                 result_url=url, error=None, generation_time_ms=duration_ms,
             )
             task_repo.add_log(db, task_id, "completed", data={"url": url, "ms": duration_ms})
+            # Биллинг: фиксируем успешное списание (аудит, баланс не меняется).
+            if settings.BILLING_ENABLED:
+                try:
+                    from app.services import billing
+                    billing.commit_charge_audit(db, task_id)
+                except Exception as e:  # noqa: BLE001 — аудит не должен ронять успех
+                    logger.error("charge audit failed",
+                                 extra={"task_id": task_id, "error": str(e)})
 
         generation_seconds.labels(task_type=task_type).observe(duration_ms / 1000)
         tasks_total.labels(task_type=task_type, status="completed").inc()
@@ -161,6 +169,14 @@ def _dead_letter(task_id: str, error: str) -> None:
         db.add(SystemEvent(level="error", source="worker", event="dead_letter",
                            message=error, data={"task_id": task_id}))
         db.commit()
+        # Биллинг: возврат средств партнёру — ТОЛЬКО здесь (терминальный сбой),
+        # идемпотентно. Сбой возврата не должен ронять dead-letter/callback.
+        if settings.BILLING_ENABLED:
+            try:
+                from app.services import billing
+                billing.refund(db, task_id)
+            except Exception as e:  # noqa: BLE001
+                logger.error("refund failed", extra={"task_id": task_id, "error": str(e)})
         task = task_repo.get(db, task_id)
         callback_url = task.callback_url if task else None
         meta = dict(task.meta) if task and task.meta else {}

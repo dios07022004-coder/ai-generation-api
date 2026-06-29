@@ -32,6 +32,8 @@ class Task(Base, TimestampMixin):
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     retries: Mapped[int] = mapped_column(Integer, default=0)
     generation_time_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Списанная цена (кредиты) — единственный источник суммы для возврата. None = биллинг был выкл.
+    price_credits: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     def to_public(self) -> dict:
         return {
@@ -45,6 +47,7 @@ class Task(Base, TimestampMixin):
             "result_url": self.result_url,
             "error": self.error,
             "generation_time": self.generation_time_ms,
+            "price_credits": self.price_credits,
             "metadata": self.meta,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,

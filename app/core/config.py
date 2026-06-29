@@ -64,6 +64,11 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_IP: int = 240
     RATE_LIMIT_WINDOW_SECONDS: int = 60
 
+    # Billing (партнёрская оплата за генерацию). 1 кредит = 1 ₽, только целые.
+    # По умолчанию ВЫКЛ — поведение не меняется, пока явно не включишь.
+    BILLING_ENABLED: bool = False
+    PRICING_CONFIG: str = "./config/pricing.yaml"
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -1,6 +1,7 @@
 """ORM-модели. Импорт всех — чтобы Alembic их видел."""
 from .api_key import ApiKey
 from .base import Base
+from .billing_ledger import BillingLedger
 from .generation import Generation
 from .system_event import SystemEvent
 from .task import Task
@@ -17,4 +18,5 @@ __all__ = [
     "Generation",
     "Webhook",
     "SystemEvent",
+    "BillingLedger",
 ]

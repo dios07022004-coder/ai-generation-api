@@ -38,6 +38,13 @@ class RateLimitError(AppError):
     code = "rate_limited"
 
 
+class PaymentRequiredError(AppError):
+    """Недостаточно средств на балансе партнёра (предоплатный биллинг)."""
+
+    status_code = 402
+    code = "insufficient_balance"
+
+
 class ProviderError(AppError):
     """Ошибка движка генерации (ComfyUI и т.п.)."""
 

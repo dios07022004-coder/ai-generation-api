@@ -14,6 +14,7 @@ from app.db.session import SessionLocal
 from app.models import SystemEvent
 from app.monitoring.metrics import requests_total
 from app.services.mode_registry import registry
+from app.services.pricing import pricing
 
 logger = get_logger(__name__)
 
@@ -22,6 +23,7 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     setup_logging()
     count = registry.reload()
+    pricing.reload()
     logger.info("api startup", extra={"version": __version__, "modes": count})
     with SessionLocal() as db:
         db.add(SystemEvent(source="api", event="startup", data={"modes": count}))
@@ -65,12 +67,13 @@ def create_app() -> FastAPI:
         ).inc()
         return response
 
-    from app.api.routes import generate, health, modes, tasks, uploads
+    from app.api.routes import billing, generate, health, modes, tasks, uploads
     app.include_router(health.router)
     app.include_router(generate.router)
     app.include_router(uploads.router)
     app.include_router(tasks.router)
     app.include_router(modes.router)
+    app.include_router(billing.router)
 
     # Локальная отдача результатов (только для STORAGE_PROVIDER=local).
     if settings.STORAGE_PROVIDER == "local":

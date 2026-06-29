@@ -1,6 +1,8 @@
-"""Бизнес-логика приёма задачи: валидация режима, идемпотентность, постановка в очередь."""
+"""Бизнес-логика приёма задачи: валидация режима, идемпотентность, биллинг, очередь."""
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
+from app.core.errors import PaymentRequiredError
 from app.core.logging import get_logger
 from app.models import ApiKey
 from app.repositories import task_repo
@@ -30,6 +32,13 @@ def create_task(db: Session, req: GenerateRequest, api_key: ApiKey | None) -> tu
         if existing:
             return existing.id, False
 
+    # Биллинг: считаем цену ДО создания задачи (нет цены → 422, без «осиротевшей» задачи).
+    billing_on = settings.BILLING_ENABLED and api_key is not None
+    price = None
+    if billing_on:
+        from app.services.pricing import pricing
+        price = pricing.price_for(req.task_type, req.mode, api_key)
+
     callback_url = str(req.callback_url) if req.callback_url else (
         api_key.callback_url if api_key else None
     )
@@ -50,6 +59,16 @@ def create_task(db: Session, req: GenerateRequest, api_key: ApiKey | None) -> tu
         status="queued",
     )
     task_repo.add_log(db, task.id, "task_created", data={"mode": req.mode})
+
+    # Биллинг: резервируем (списываем) средства до постановки в очередь.
+    if billing_on:
+        from app.services import billing
+        try:
+            billing.reserve(db, api_key, task.id, price)
+        except PaymentRequiredError:
+            task_repo.update(db, task.id, status="failed", error="insufficient_balance")
+            logger.warning("insufficient balance", extra={"api_key_id": api_key_id})
+            raise
 
     # Импорт здесь, чтобы API не тянул celery-воркер при импорте модуля.
     from app.queues.tasks import process_generation

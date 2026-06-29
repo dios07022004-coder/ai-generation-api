@@ -12,6 +12,7 @@ class TaskStatus(BaseModel):
     result_url: str | None = None
     error: str | None = None
     generation_time: int | None = None
+    price_credits: int | None = None
     metadata: dict = {}
     created_at: str | None = None
     updated_at: str | None = None
